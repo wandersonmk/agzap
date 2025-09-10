@@ -461,6 +461,57 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal de Confirmação de Exclusão de Produto -->
+  <div
+    v-if="modalExclusaoProdutoAberto && produtoExcluindo"
+    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+    @click="fecharModalExclusaoProduto"
+  >
+    <div
+      class="bg-card border border-border rounded-lg p-6 w-full max-w-md shadow-xl"
+      @click.stop
+    >
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-12 h-12 bg-destructive/10 rounded-full flex items-center justify-center">
+          <font-awesome-icon icon="exclamation-triangle" class="w-6 h-6 text-destructive" />
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-foreground">Confirmar Exclusão</h3>
+          <p class="text-sm text-muted-foreground">Esta ação não pode ser desfeita</p>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <p class="text-foreground mb-2">
+          Tem certeza que deseja excluir o produto:
+        </p>
+        <div class="bg-muted/20 rounded-lg p-3 border border-border">
+          <h4 class="font-medium text-foreground">{{ produtoExcluindo.nome }}</h4>
+          <p class="text-sm text-muted-foreground">{{ produtoExcluindo.descricao }}</p>
+          <p class="text-sm font-semibold text-primary mt-1">
+            R$ {{ produtoExcluindo.preco.toFixed(2).replace('.', ',') }}
+          </p>
+        </div>
+      </div>
+
+      <div class="flex gap-3 justify-end">
+        <button
+          @click="fecharModalExclusaoProduto"
+          class="px-4 py-2 text-muted-foreground hover:text-foreground border border-border rounded-lg hover:bg-muted/10 transition-colors"
+        >
+          Cancelar
+        </button>
+        <button
+          @click="confirmarExclusaoProduto"
+          class="px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors flex items-center gap-2"
+        >
+          <font-awesome-icon icon="trash" class="w-4 h-4" />
+          Excluir Produto
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -474,7 +525,7 @@ interface Props {
 const props = defineProps<Props>()
 
 // Composable para gerenciar o cardápio
-const { adicionarProduto } = useCardapio()
+const { adicionarProduto, editarProduto: editarProdutoCardapio, removerProduto } = useCardapio()
 
 // Estado para controlar quais categorias estão abertas/expandidas
 const categoriasAbertas = ref<Set<string>>(new Set())
@@ -487,6 +538,10 @@ const categoriaEditando = ref<Categoria | null>(null)
 const categoriaExcluindo = ref<Categoria | null>(null)
 const nomeEdicao = ref('')
 const statusEdicao = ref(true)
+
+// Estados do modal de confirmação de exclusão de produto
+const produtoExcluindo = ref<Produto | null>(null)
+const modalExclusaoProdutoAberto = ref(false)
 
 // Estados do modal de novo produto
 const modalNovoProdutoAberto = ref(false)
@@ -764,8 +819,28 @@ const editarProduto = (produto: Produto) => {
 }
 
 const excluirProduto = (produto: Produto) => {
-  // TODO: Implementar exclusão de produto
-  console.log('Excluir produto:', produto.id, produto.nome)
+  // Abrir modal de confirmação
+  produtoExcluindo.value = produto
+  modalExclusaoProdutoAberto.value = true
+}
+
+// Funções do modal de exclusão de produto
+const fecharModalExclusaoProduto = () => {
+  modalExclusaoProdutoAberto.value = false
+  produtoExcluindo.value = null
+}
+
+const confirmarExclusaoProduto = () => {
+  if (produtoExcluindo.value) {
+    // Remover o produto usando a função do composable
+    removerProduto(produtoExcluindo.value.id)
+    
+    // Log opcional para debug
+    console.log(`Produto "${produtoExcluindo.value.nome}" foi removido da interface`)
+    
+    // Fechar o modal
+    fecharModalExclusaoProduto()
+  }
 }
 </script>
 
