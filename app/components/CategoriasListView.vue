@@ -53,9 +53,21 @@
           v-if="categoriasAbertas.has(categoria.id)"
           class="p-4"
         >
+          <!-- Botão Adicionar Produto -->
+          <div class="mb-4 pb-4 border-b border-border">
+            <button
+              @click="abrirModalNovoProduto(categoria)"
+              class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg transition-colors"
+            >
+              <font-awesome-icon icon="plus" class="w-4 h-4" />
+              <span class="font-medium">Adicionar Produto em {{ categoria.nome }}</span>
+            </button>
+          </div>
+
           <div v-if="getProdutosPorCategoria(categoria.id).length === 0" class="text-center py-6 text-muted-foreground">
             <font-awesome-icon icon="box-open" class="text-2xl mb-2" />
             <p class="text-sm">Nenhum produto nesta categoria</p>
+            <p class="text-xs mt-1">Clique no botão acima para adicionar o primeiro produto</p>
           </div>
           
           <div v-else class="grid gap-3">
@@ -245,6 +257,131 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal Novo Produto -->
+    <div 
+      v-if="modalNovoProdutoAberto"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      @click="fecharModalNovoProduto"
+    >
+      <div 
+        class="bg-card border border-border rounded-lg p-6 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto"
+        @click.stop
+      >
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-lg font-semibold text-foreground">
+            Novo Produto - {{ categoriaSelecionada?.nome }}
+          </h3>
+          <button
+            @click="fecharModalNovoProduto"
+            class="text-muted-foreground hover:text-foreground"
+          >
+            <font-awesome-icon icon="times" class="w-5 h-5" />
+          </button>
+        </div>
+
+        <form @submit.prevent="salvarNovoProduto" class="space-y-4">
+          <!-- Nome do Produto -->
+          <div>
+            <label class="block text-sm font-medium text-foreground mb-2">
+              Nome do Produto *
+            </label>
+            <input
+              v-model="formularioProduto.nome"
+              type="text"
+              required
+              class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent"
+              placeholder="Ex: Pizza Margherita, Hambúrguer Clássico..."
+            />
+          </div>
+
+          <!-- Descrição -->
+          <div>
+            <label class="block text-sm font-medium text-foreground mb-2">
+              Descrição
+            </label>
+            <textarea
+              v-model="formularioProduto.descricao"
+              rows="3"
+              class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+              placeholder="Descreva os ingredientes e características do produto..."
+            ></textarea>
+          </div>
+
+          <!-- Preço -->
+          <div>
+            <label class="block text-sm font-medium text-foreground mb-2">
+              Preço *
+            </label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+                R$
+              </span>
+              <input
+                v-model="formularioProduto.preco"
+                type="number"
+                step="0.01"
+                min="0"
+                required
+                class="w-full pl-10 pr-3 py-2 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent"
+                placeholder="0,00"
+              />
+            </div>
+          </div>
+
+          <!-- Tipo do Produto -->
+          <div>
+            <label class="block text-sm font-medium text-foreground mb-2">
+              Tipo do Produto
+            </label>
+            <select
+              v-model="formularioProduto.tipo"
+              class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent"
+            >
+              <option value="comum">Produto Comum</option>
+              <option value="pizza">Pizza (com sabores e tamanhos)</option>
+            </select>
+          </div>
+
+          <!-- Status -->
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-medium text-foreground">
+              Produto disponível para venda
+            </span>
+            <button
+              type="button"
+              @click="formularioProduto.ativo = !formularioProduto.ativo"
+              class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+              :class="formularioProduto.ativo ? 'bg-primary' : 'bg-border'"
+            >
+              <span
+                class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                :class="formularioProduto.ativo ? 'translate-x-6' : 'translate-x-1'"
+              ></span>
+            </button>
+          </div>
+
+          <!-- Botões -->
+          <div class="flex items-center gap-3 justify-end mt-6 pt-4 border-t border-border">
+            <button
+              type="button"
+              @click="fecharModalNovoProduto"
+              class="px-4 py-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              :disabled="!podeAdicionarProduto"
+              class="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              <font-awesome-icon icon="plus" class="w-4 h-4" />
+              Adicionar Produto
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -266,6 +403,17 @@ const categoriaEditando = ref<Categoria | null>(null)
 const categoriaExcluindo = ref<Categoria | null>(null)
 const nomeEdicao = ref('')
 const statusEdicao = ref(true)
+
+// Estados do modal de novo produto
+const modalNovoProdutoAberto = ref(false)
+const categoriaSelecionada = ref<Categoria | null>(null)
+const formularioProduto = ref({
+  nome: '',
+  descricao: '',
+  preco: 0,
+  tipo: 'comum' as 'comum' | 'pizza',
+  ativo: true
+})
 
 // Função para alternar estado da categoria (abrir/fechar)
 const toggleCategoria = (categoriaId: string) => {
@@ -298,6 +446,23 @@ const houveMudancas = computed(() => {
 const podeEditarCategoria = computed(() => {
   return nomeEdicao.value.trim().length >= 2 && houveMudancas.value
 })
+
+// Computed para validar se pode adicionar produto
+const podeAdicionarProduto = computed(() => {
+  return formularioProduto.value.nome.trim().length >= 2 && 
+         formularioProduto.value.preco > 0
+})
+
+// Função para resetar o formulário de produto
+const resetarFormularioProduto = () => {
+  formularioProduto.value = {
+    nome: '',
+    descricao: '',
+    preco: 0,
+    tipo: 'comum',
+    ativo: true
+  }
+}
 
 // Funções do modal de edição
 const abrirModalEdicao = (categoria: Categoria) => {
@@ -338,6 +503,37 @@ const confirmarExclusao = () => {
   console.log('Produtos que serão excluídos:', produtosNaCategoria.value.length)
   
   fecharModalExclusao()
+}
+
+// Funções do modal de novo produto
+const abrirModalNovoProduto = (categoria: Categoria) => {
+  categoriaSelecionada.value = categoria
+  resetarFormularioProduto()
+  modalNovoProdutoAberto.value = true
+}
+
+const fecharModalNovoProduto = () => {
+  modalNovoProdutoAberto.value = false
+  categoriaSelecionada.value = null
+  resetarFormularioProduto()
+}
+
+const salvarNovoProduto = () => {
+  if (!categoriaSelecionada.value || !podeAdicionarProduto.value) return
+  
+  // TODO: Implementar a adição do produto via composable
+  const novoProduto = {
+    nome: formularioProduto.value.nome.trim(),
+    descricao: formularioProduto.value.descricao.trim(),
+    preco: Number(formularioProduto.value.preco),
+    categoriaId: categoriaSelecionada.value.id,
+    tipo: formularioProduto.value.tipo,
+    ativo: formularioProduto.value.ativo
+  }
+  
+  console.log('Adicionando novo produto:', novoProduto)
+  
+  fecharModalNovoProduto()
 }
 
 // Funções para produtos (placeholder por enquanto)
