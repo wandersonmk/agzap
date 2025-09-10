@@ -41,7 +41,9 @@ import {
   faCheese,
   faAppleAlt,
   faSeedling,
-  faBirthdayCake
+  faBirthdayCake,
+  faCloudUploadAlt,
+  faSave
 } from '@fortawesome/free-solid-svg-icons'
 
 // This is important, we are going to let Nuxt worry about the CSS
@@ -90,7 +92,9 @@ library.add(
   faCheese,
   faAppleAlt,
   faSeedling,
-  faBirthdayCake
+  faBirthdayCake,
+  faCloudUploadAlt,
+  faSave
 )
 
 export default defineNuxtPlugin((nuxtApp) => {

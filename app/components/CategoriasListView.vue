@@ -270,7 +270,7 @@
       >
         <div class="flex items-center justify-between mb-6">
           <h3 class="text-lg font-semibold text-foreground">
-            Novo Produto - {{ categoriaSelecionada?.nome }}
+            {{ modoEdicao ? 'Editar Produto' : 'Novo Produto' }} - {{ categoriaSelecionada?.nome }}
           </h3>
           <button
             @click="fecharModalNovoProduto"
@@ -318,10 +318,9 @@
                 R$
               </span>
               <input
-                v-model="formularioProduto.preco"
-                type="number"
-                step="0.01"
-                min="0"
+                v-model="precoFormatado"
+                @input="formatarPreco"
+                type="text"
                 required
                 class="w-full pl-10 pr-3 py-2 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="0,00"
@@ -329,18 +328,67 @@
             </div>
           </div>
 
-          <!-- Tipo do Produto -->
+          <!-- Upload de Foto -->
           <div>
             <label class="block text-sm font-medium text-foreground mb-2">
-              Tipo do Produto
+              Foto do Produto
             </label>
-            <select
-              v-model="formularioProduto.tipo"
-              class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-primary focus:border-transparent"
-            >
-              <option value="comum">Produto Comum</option>
-              <option value="pizza">Pizza (com sabores e tamanhos)</option>
-            </select>
+            <div class="space-y-3">
+              <!-- Foto atual (modo edição) -->
+              <div 
+                v-if="modoEdicao && produtoEditando?.foto && !previewFoto"
+                class="p-3 bg-muted/20 border border-border rounded-lg"
+              >
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <font-awesome-icon icon="file-alt" class="w-6 h-6 text-primary" />
+                  </div>
+                  <div class="flex-1">
+                    <p class="text-sm font-medium text-foreground">Foto atual do produto</p>
+                    <p class="text-xs text-muted-foreground">Selecione uma nova foto para substituir</p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Preview da imagem nova -->
+              <div 
+                v-if="previewFoto" 
+                class="relative w-32 h-32 mx-auto border border-border rounded-lg overflow-hidden bg-muted/20"
+              >
+                <img 
+                  :src="previewFoto" 
+                  alt="Preview do produto"
+                  class="w-full h-full object-cover"
+                />
+                <button
+                  type="button"
+                  @click="removerFoto"
+                  class="absolute top-1 right-1 w-6 h-6 bg-destructive text-white rounded-full flex items-center justify-center hover:bg-destructive/80 transition-colors"
+                >
+                  <font-awesome-icon icon="times" class="w-3 h-3" />
+                </button>
+              </div>
+              
+              <!-- Input de arquivo -->
+              <div class="flex items-center justify-center w-full">
+                <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-border border-dashed rounded-lg cursor-pointer bg-muted/10 hover:bg-muted/20 transition-colors">
+                  <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                    <font-awesome-icon icon="cloud-upload-alt" class="w-8 h-8 mb-2 text-muted-foreground" />
+                    <p class="mb-2 text-sm text-muted-foreground">
+                      <span class="font-semibold">Clique para enviar</span> ou arraste a foto
+                    </p>
+                    <p class="text-xs text-muted-foreground">PNG, JPG ou WEBP (máx. 5MB)</p>
+                  </div>
+                  <input
+                    ref="inputFoto"
+                    type="file"
+                    accept="image/*"
+                    @change="handleFileUpload"
+                    class="hidden"
+                  />
+                </label>
+              </div>
+            </div>
           </div>
 
           <!-- Status -->
@@ -375,8 +423,8 @@
               :disabled="!podeAdicionarProduto"
               class="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              <font-awesome-icon icon="plus" class="w-4 h-4" />
-              Adicionar Produto
+              <font-awesome-icon :icon="modoEdicao ? 'save' : 'plus'" class="w-4 h-4" />
+              {{ modoEdicao ? 'Salvar Alterações' : 'Adicionar Produto' }}
             </button>
           </div>
         </form>
@@ -395,6 +443,9 @@ interface Props {
 
 const props = defineProps<Props>()
 
+// Composable para gerenciar o cardápio
+const { adicionarProduto } = useCardapio()
+
 // Estado para controlar quais categorias estão abertas/expandidas
 const categoriasAbertas = ref<Set<string>>(new Set())
 
@@ -407,13 +458,23 @@ const statusEdicao = ref(true)
 // Estados do modal de novo produto
 const modalNovoProdutoAberto = ref(false)
 const categoriaSelecionada = ref<Categoria | null>(null)
+const produtoEditando = ref<Produto | null>(null)
+const modoEdicao = ref(false)
 const formularioProduto = ref({
   nome: '',
   descricao: '',
   preco: 0,
   tipo: 'comum' as 'comum' | 'pizza',
-  ativo: true
+  ativo: true,
+  foto: null as File | null
 })
+
+// Estados para o upload de foto
+const previewFoto = ref<string | null>(null)
+const inputFoto = ref<HTMLInputElement | null>(null)
+
+// Estado para o preço formatado
+const precoFormatado = ref('')
 
 // Função para alternar estado da categoria (abrir/fechar)
 const toggleCategoria = (categoriaId: string) => {
@@ -460,7 +521,15 @@ const resetarFormularioProduto = () => {
     descricao: '',
     preco: 0,
     tipo: 'comum',
-    ativo: true
+    ativo: true,
+    foto: null
+  }
+  precoFormatado.value = ''
+  previewFoto.value = null
+  modoEdicao.value = false
+  produtoEditando.value = null
+  if (inputFoto.value) {
+    inputFoto.value.value = ''
   }
 }
 
@@ -521,25 +590,129 @@ const fecharModalNovoProduto = () => {
 const salvarNovoProduto = () => {
   if (!categoriaSelecionada.value || !podeAdicionarProduto.value) return
   
-  // TODO: Implementar a adição do produto via composable
-  const novoProduto = {
-    nome: formularioProduto.value.nome.trim(),
-    descricao: formularioProduto.value.descricao.trim(),
-    preco: Number(formularioProduto.value.preco),
-    categoriaId: categoriaSelecionada.value.id,
-    tipo: formularioProduto.value.tipo,
-    ativo: formularioProduto.value.ativo
+  if (modoEdicao.value && produtoEditando.value) {
+    // Modo edição - atualizar produto existente
+    const produtoAtualizado = {
+      nome: formularioProduto.value.nome.trim(),
+      descricao: formularioProduto.value.descricao.trim(),
+      preco: Number(formularioProduto.value.preco),
+      tipo: formularioProduto.value.tipo,
+      ativo: formularioProduto.value.ativo,
+      // Manter a foto existente se não foi alterada, ou usar nova se foi
+      foto: formularioProduto.value.foto ? 'foto-produto-' + Date.now() + '.jpg' : produtoEditando.value.foto
+    }
+    
+    // TODO: Implementar a edição do produto via composable
+    console.log('Editando produto:', produtoEditando.value.id, produtoAtualizado)
+    console.log('Nova foto selecionada:', formularioProduto.value.foto ? 'Sim' : 'Não')
+    
+  } else {
+    // Modo criação - criar novo produto
+    const novoProduto = {
+      nome: formularioProduto.value.nome.trim(),
+      descricao: formularioProduto.value.descricao.trim(),
+      preco: Number(formularioProduto.value.preco),
+      categoriaId: categoriaSelecionada.value.id,
+      tipo: formularioProduto.value.tipo,
+      ativo: formularioProduto.value.ativo,
+      foto: formularioProduto.value.foto ? 'foto-produto-' + Date.now() + '.jpg' : undefined
+    }
+    
+    // Adicionar o produto usando o composable
+    adicionarProduto(novoProduto)
+    
+    console.log('Produto adicionado com sucesso:', novoProduto)
+    console.log('Arquivo de foto:', formularioProduto.value.foto ? 'Presente' : 'Não selecionado')
   }
-  
-  console.log('Adicionando novo produto:', novoProduto)
   
   fecharModalNovoProduto()
 }
 
-// Funções para produtos (placeholder por enquanto)
+// Funções para formatação de preço
+const formatarPreco = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  let valor = input.value.replace(/\D/g, '') // Remove todos os caracteres não numéricos
+  
+  if (valor === '') {
+    precoFormatado.value = ''
+    formularioProduto.value.preco = 0
+    return
+  }
+  
+  // Converte para número e divide por 100 para ter centavos
+  const numeroValor = parseInt(valor) / 100
+  formularioProduto.value.preco = numeroValor
+  
+  // Formata para exibição brasileira
+  precoFormatado.value = numeroValor.toFixed(2).replace('.', ',')
+}
+
+// Funções para upload de foto
+const handleFileUpload = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  
+  if (!file) return
+  
+  // Validar tipo de arquivo
+  if (!file.type.startsWith('image/')) {
+    alert('Por favor, selecione apenas arquivos de imagem.')
+    return
+  }
+  
+  // Validar tamanho (5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    alert('A imagem deve ter no máximo 5MB.')
+    return
+  }
+  
+  formularioProduto.value.foto = file
+  
+  // Criar preview
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    previewFoto.value = e.target?.result as string
+  }
+  reader.readAsDataURL(file)
+}
+
+const removerFoto = () => {
+  formularioProduto.value.foto = null
+  previewFoto.value = null
+  if (inputFoto.value) {
+    inputFoto.value.value = ''
+  }
+}
+
+// Funções para produtos
 const editarProduto = (produto: Produto) => {
-  // TODO: Implementar edição de produto
-  console.log('Editar produto:', produto.id, produto.nome)
+  // Encontrar a categoria do produto
+  const categoria = props.categorias.find(c => c.id === produto.categoriaId)
+  if (!categoria) return
+  
+  // Configurar para modo edição
+  categoriaSelecionada.value = categoria
+  produtoEditando.value = produto
+  modoEdicao.value = true
+  
+  // Preencher o formulário com os dados do produto
+  formularioProduto.value = {
+    nome: produto.nome,
+    descricao: produto.descricao || '',
+    preco: produto.preco,
+    tipo: produto.tipo,
+    ativo: produto.ativo,
+    foto: null // Resetar o input de foto
+  }
+  
+  // Formatar o preço para exibição
+  precoFormatado.value = produto.preco.toFixed(2).replace('.', ',')
+  
+  // Se o produto tem foto, não mostrar preview (pois é do banco)
+  previewFoto.value = null
+  
+  // Abrir o modal
+  modalNovoProdutoAberto.value = true
 }
 
 const excluirProduto = (produto: Produto) => {
