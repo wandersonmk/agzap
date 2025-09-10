@@ -64,15 +64,45 @@
             </button>
           </div>
 
+          <!-- Campo de Busca (só aparece se houver produtos) -->
+          <div v-if="getProdutosPorCategoria(categoria.id).length > 0" class="mb-4">
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <font-awesome-icon icon="search" class="h-4 w-4 text-muted-foreground" />
+              </div>
+              <input
+                v-model="filtrosProdutos[categoria.id]"
+                type="text"
+                class="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent"
+                :placeholder="`Buscar produtos em ${categoria.nome}...`"
+              />
+              <div v-if="filtrosProdutos[categoria.id]" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                <button
+                  @click="filtrosProdutos[categoria.id] = ''"
+                  class="text-muted-foreground hover:text-foreground"
+                >
+                  <font-awesome-icon icon="times" class="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div v-if="getProdutosPorCategoria(categoria.id).length === 0" class="text-center py-6 text-muted-foreground">
             <font-awesome-icon icon="box-open" class="text-2xl mb-2" />
             <p class="text-sm">Nenhum produto nesta categoria</p>
             <p class="text-xs mt-1">Clique no botão acima para adicionar o primeiro produto</p>
           </div>
+
+          <!-- Mensagem quando há produtos mas nenhum corresponde ao filtro -->
+          <div v-else-if="getProdutosFiltrados(categoria.id).length === 0" class="text-center py-6 text-muted-foreground">
+            <font-awesome-icon icon="search" class="text-2xl mb-2" />
+            <p class="text-sm">Nenhum produto encontrado</p>
+            <p class="text-xs mt-1">Tente buscar com outras palavras-chave</p>
+          </div>
           
           <div v-else class="grid gap-3">
             <div 
-              v-for="produto in getProdutosPorCategoria(categoria.id)" 
+              v-for="produto in getProdutosFiltrados(categoria.id)" 
               :key="produto.id"
               class="bg-muted/20 rounded-lg p-4 border border-border"
             >
@@ -449,6 +479,9 @@ const { adicionarProduto } = useCardapio()
 // Estado para controlar quais categorias estão abertas/expandidas
 const categoriasAbertas = ref<Set<string>>(new Set())
 
+// Estado para filtros de busca por categoria
+const filtrosProdutos = ref<Record<string, string>>({})
+
 // Estados dos modais
 const categoriaEditando = ref<Categoria | null>(null)
 const categoriaExcluindo = ref<Categoria | null>(null)
@@ -488,6 +521,21 @@ const toggleCategoria = (categoriaId: string) => {
 // Função para buscar produtos de uma categoria específica
 const getProdutosPorCategoria = (categoriaId: string): Produto[] => {
   return props.produtos.filter(produto => produto.categoriaId === categoriaId)
+}
+
+// Função para buscar produtos filtrados por nome em uma categoria
+const getProdutosFiltrados = (categoriaId: string): Produto[] => {
+  const produtos = getProdutosPorCategoria(categoriaId)
+  const filtro = filtrosProdutos.value[categoriaId]
+  
+  if (!filtro || filtro.trim() === '') {
+    return produtos
+  }
+  
+  return produtos.filter(produto => 
+    produto.nome.toLowerCase().includes(filtro.toLowerCase()) ||
+    (produto.descricao && produto.descricao.toLowerCase().includes(filtro.toLowerCase()))
+  )
 }
 
 // Computed para produtos na categoria sendo excluída
