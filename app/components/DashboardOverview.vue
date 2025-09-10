@@ -145,7 +145,7 @@ const createLineChart = () => {
             color: '#F3F4F6',
             font: {
               size: 12,
-              weight: '500'
+              weight: 500
             }
           }
         },
@@ -171,8 +171,7 @@ const createLineChart = () => {
             }
           },
           grid: {
-            color: '#374151',
-            borderColor: '#4B5563'
+            color: '#374151'
           }
         },
         y: {
@@ -182,12 +181,11 @@ const createLineChart = () => {
               size: 11
             },
             callback: function(value) {
-              return 'R$ ' + (value / 1000).toFixed(0) + 'k'
+              return 'R$ ' + (Number(value) / 1000).toFixed(0) + 'k'
             }
           },
           grid: {
-            color: '#374151',
-            borderColor: '#4B5563'
+            color: '#374151'
           }
         }
       }
