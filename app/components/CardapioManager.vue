@@ -85,6 +85,13 @@
         <CategoriasListView :categorias="categorias" :produtos="produtos" />
       </div>
     </div>
+
+    <!-- Modal para Nova Categoria -->
+    <ModalNovaCategoria 
+      :is-visible="mostrarModalCategoria"
+      @close="mostrarModalCategoria = false"
+      @save="handleSalvarCategoria"
+    />
   </div>
 </template>
 

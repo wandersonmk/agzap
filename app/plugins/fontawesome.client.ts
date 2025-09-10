@@ -30,7 +30,18 @@ import {
   faPlus,
   faLayerGroup,
   faDollarSign,
-  faEllipsisH
+  faEllipsisH,
+  faPizzaSlice,
+  faHamburger,
+  faCoffee,
+  faWineGlass,
+  faIceCream,
+  faBreadSlice,
+  faFish,
+  faCheese,
+  faAppleAlt,
+  faSeedling,
+  faBirthdayCake
 } from '@fortawesome/free-solid-svg-icons'
 
 // This is important, we are going to let Nuxt worry about the CSS
@@ -68,7 +79,18 @@ library.add(
   faPlus,
   faLayerGroup,
   faDollarSign,
-  faEllipsisH
+  faEllipsisH,
+  faPizzaSlice,
+  faHamburger,
+  faCoffee,
+  faWineGlass,
+  faIceCream,
+  faBreadSlice,
+  faFish,
+  faCheese,
+  faAppleAlt,
+  faSeedling,
+  faBirthdayCake
 )
 
 export default defineNuxtPlugin((nuxtApp) => {

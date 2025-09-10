@@ -127,6 +127,25 @@
               placeholder="Digite o nome da categoria"
             />
           </div>
+
+          <!-- Status da Categoria -->
+          <div class="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
+            <div>
+              <label class="text-sm font-medium text-foreground">Status da Categoria</label>
+              <p class="text-xs text-muted-foreground">Categorias ativas aparecem no cardápio</p>
+            </div>
+            <button
+              type="button"
+              @click="statusEdicao = !statusEdicao"
+              class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+              :class="statusEdicao ? 'bg-primary' : 'bg-border'"
+            >
+              <span
+                class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                :class="statusEdicao ? 'translate-x-6' : 'translate-x-1'"
+              ></span>
+            </button>
+          </div>
         </div>
         
         <div class="flex items-center gap-3 justify-end mt-6">
@@ -138,10 +157,10 @@
           </button>
           <button
             @click="salvarEdicao"
-            :disabled="!nomeEdicao.trim()"
+            :disabled="!podeEditarCategoria"
             class="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Salvar
+            Salvar Alterações
           </button>
         </div>
       </div>
@@ -246,6 +265,7 @@ const categoriasAbertas = ref<Set<string>>(new Set())
 const categoriaEditando = ref<Categoria | null>(null)
 const categoriaExcluindo = ref<Categoria | null>(null)
 const nomeEdicao = ref('')
+const statusEdicao = ref(true)
 
 // Função para alternar estado da categoria (abrir/fechar)
 const toggleCategoria = (categoriaId: string) => {
@@ -267,22 +287,36 @@ const produtosNaCategoria = computed(() => {
   return getProdutosPorCategoria(categoriaExcluindo.value.id)
 })
 
+// Computed para verificar se houve mudanças na edição
+const houveMudancas = computed(() => {
+  if (!categoriaEditando.value) return false
+  return nomeEdicao.value.trim() !== categoriaEditando.value.nome || 
+         statusEdicao.value !== categoriaEditando.value.ativa
+})
+
+// Computed para validar se pode salvar
+const podeEditarCategoria = computed(() => {
+  return nomeEdicao.value.trim().length >= 2 && houveMudancas.value
+})
+
 // Funções do modal de edição
 const abrirModalEdicao = (categoria: Categoria) => {
   categoriaEditando.value = categoria
   nomeEdicao.value = categoria.nome
+  statusEdicao.value = categoria.ativa
 }
 
 const fecharModalEdicao = () => {
   categoriaEditando.value = null
   nomeEdicao.value = ''
+  statusEdicao.value = true
 }
 
 const salvarEdicao = () => {
   if (!categoriaEditando.value || !nomeEdicao.value.trim()) return
   
   // TODO: Implementar a edição da categoria
-  console.log('Editando categoria:', categoriaEditando.value.id, 'Novo nome:', nomeEdicao.value.trim())
+  console.log('Editando categoria:', categoriaEditando.value.id, 'Novo nome:', nomeEdicao.value.trim(), 'Status:', statusEdicao.value)
   
   fecharModalEdicao()
 }
