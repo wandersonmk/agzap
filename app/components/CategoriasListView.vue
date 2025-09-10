@@ -100,7 +100,7 @@
             <p class="text-xs mt-1">Tente buscar com outras palavras-chave</p>
           </div>
           
-          <div v-else class="grid gap-3">
+          <div v-else class="grid gap-3 max-h-[32rem] overflow-y-auto pr-2">
             <div 
               v-for="produto in getProdutosFiltrados(categoria.id)" 
               :key="produto.id"
@@ -768,3 +768,29 @@ const excluirProduto = (produto: Produto) => {
   console.log('Excluir produto:', produto.id, produto.nome)
 }
 </script>
+
+<style scoped>
+/* Estilização customizada da barra de rolagem */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #26272B;
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #8162FF;
+}
+
+/* Para Firefox */
+.overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: #26272B transparent;
+}
+</style>
