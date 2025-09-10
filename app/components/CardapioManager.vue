@@ -1,22 +1,5 @@
 <template>
   <div class="max-w-7xl mx-auto space-y-6">
-    <!-- Header com ações -->
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold text-foreground">Gerenciamento do Cardápio</h1>
-        <p class="text-muted-foreground">Organize categorias e produtos</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <button
-          @click="mostrarModalCategoria = true"
-          class="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-        >
-          <font-awesome-icon icon="plus" class="w-4 h-4 mr-2" />
-          Nova Categoria
-        </button>
-      </div>
-    </div>
-
     <!-- Cards de métricas -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <!-- Total de Produtos -->

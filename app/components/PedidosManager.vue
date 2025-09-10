@@ -2,11 +2,6 @@
   <div class="max-w-7xl mx-auto space-y-6">
     <!-- Header com filtros e estatísticas rápidas -->
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-      <div>
-        <h1 class="text-2xl font-bold text-foreground">Gestor de Pedidos</h1>
-        <p class="text-muted-foreground">Gerencie todos os pedidos em tempo real</p>
-      </div>
-      
       <div class="flex gap-2">
         <button
           v-for="status in statusFilters"
