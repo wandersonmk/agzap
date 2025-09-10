@@ -107,26 +107,6 @@
             </div>
           </div>
 
-          <!-- Complementos -->
-          <div v-if="produto.complementos && produto.complementos.length > 0" class="mb-3">
-            <p class="text-xs text-muted-foreground mb-1">Complementos disponíveis:</p>
-            <div class="flex flex-wrap gap-1">
-              <span
-                v-for="complementoId in produto.complementos.slice(0, 3)"
-                :key="complementoId"
-                class="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs"
-              >
-                {{ getNomeComplemento(complementoId) }}
-              </span>
-              <span
-                v-if="produto.complementos.length > 3"
-                class="px-2 py-1 bg-muted text-muted-foreground rounded text-xs"
-              >
-                +{{ produto.complementos.length - 3 }}
-              </span>
-            </div>
-          </div>
-
           <!-- Ações -->
           <div class="flex items-center gap-2">
             <button
@@ -185,7 +165,6 @@ import type { Produto } from '../../shared/types/cardapio.types'
 const { 
   categorias, 
   produtos, 
-  complementos,
   produtosPorCategoria, 
   editarProduto: editarProdutoStore,
   adicionarProduto
@@ -206,13 +185,8 @@ const produtosFiltrados = computed(() => {
 
 // Funções
 const getNomeCategoria = (categoriaId: string) => {
-  const categoria = categorias.value.find(c => c.id === categoriaId)
+  const categoria = categorias.value.find((c: any) => c.id === categoriaId)
   return categoria?.nome || 'Categoria não encontrada'
-}
-
-const getNomeComplemento = (complementoId: string) => {
-  const complemento = complementos.value.find(c => c.id === complementoId)
-  return complemento?.nome || 'Complemento não encontrado'
 }
 
 const editarProduto = (produto: Produto) => {

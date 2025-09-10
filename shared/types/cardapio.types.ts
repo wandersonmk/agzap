@@ -33,7 +33,6 @@ export interface Produto {
   foto?: string
   categoriaId: string
   ativo: boolean
-  complementos?: string[] // IDs dos complementos disponíveis
   tipo: 'comum' | 'pizza'
   // Para pizzas
   sabores?: SaborPizza[]
@@ -62,6 +61,5 @@ export interface ItemCarrinho {
 export interface CardapioState {
   categorias: Categoria[]
   produtos: Produto[]
-  complementos: Complemento[]
   carrinho: ItemCarrinho[]
 }

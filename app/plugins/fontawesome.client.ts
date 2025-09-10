@@ -20,7 +20,17 @@ import {
   faRobot,
   faQuestionCircle,
   faShoppingCart,
-  faUtensils
+  faUtensils,
+  faEdit,
+  faTrash,
+  faChevronDown,
+  faChevronRight,
+  faBoxOpen,
+  faFolderOpen,
+  faPlus,
+  faLayerGroup,
+  faDollarSign,
+  faEllipsisH
 } from '@fortawesome/free-solid-svg-icons'
 
 // This is important, we are going to let Nuxt worry about the CSS
@@ -48,7 +58,17 @@ library.add(
   faRobot,
   faQuestionCircle,
   faShoppingCart,
-  faUtensils
+  faUtensils,
+  faEdit,
+  faTrash,
+  faChevronDown,
+  faChevronRight,
+  faBoxOpen,
+  faFolderOpen,
+  faPlus,
+  faLayerGroup,
+  faDollarSign,
+  faEllipsisH
 )
 
 export default defineNuxtPlugin((nuxtApp) => {
