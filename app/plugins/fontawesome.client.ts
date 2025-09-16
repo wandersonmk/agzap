@@ -44,8 +44,14 @@ import {
   faBirthdayCake,
   faCloudUploadAlt,
   faSave,
-  faSearch
+  faSearch,
+  faPhone
 } from '@fortawesome/free-solid-svg-icons'
+
+// Importar ícones de marca (brands)
+import {
+  faWhatsapp
+} from '@fortawesome/free-brands-svg-icons'
 
 // This is important, we are going to let Nuxt worry about the CSS
 config.autoAddCss = false
@@ -96,7 +102,8 @@ library.add(
   faBirthdayCake,
   faCloudUploadAlt,
   faSave,
-  faSearch
+  faSearch,
+  faPhone
 )
 
 export default defineNuxtPlugin((nuxtApp) => {
