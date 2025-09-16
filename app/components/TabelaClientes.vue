@@ -118,11 +118,13 @@ const formatarData = (data: string) => {
   return new Date(data).toLocaleDateString('pt-BR')
 }
 
-// Composable para exportação PDF
+// Composables para exportação
 const { exportarClientesPDF } = usePDFExport()
+const { exportarClientesExcel } = useExcelExport()
 
-// Estado para controle do loading da exportação
+// Estado para controle do loading das exportações
 const exportandoPDF = ref(false)
+const exportandoExcel = ref(false)
 
 // Função para exportar clientes em PDF
 const exportarPDF = async () => {
@@ -137,17 +139,46 @@ const exportarPDF = async () => {
     const resultado = await exportarClientesPDF(clientes.value, dadosParaExportar)
     
     if (resultado.success) {
-      // Feedback visual de sucesso (pode ser substituído por toast no futuro)
+      // Feedback visual de sucesso
       console.log(`PDF exportado: ${resultado.filename} com ${resultado.totalClientes} clientes`)
       
-      // Simulação de toast/notificação
-      alert(`✅ PDF exportado com sucesso!\n\nArquivo: ${resultado.filename}\nClientes: ${resultado.totalClientes}`)
+      // Log silencioso sem alerta do sistema
+      console.info(`✅ PDF exportado com sucesso! Arquivo: ${resultado.filename} | Clientes: ${resultado.totalClientes}`)
     }
   } catch (error) {
     console.error('Erro ao exportar PDF:', error)
-    alert('❌ Erro ao exportar PDF. Tente novamente.')
+    // Apenas log de erro, sem alerta
+    console.error('❌ Erro ao exportar PDF. Verifique o console para mais detalhes.')
   } finally {
     exportandoPDF.value = false
+  }
+}
+
+// Função para exportar clientes em Excel
+const exportarExcel = async () => {
+  try {
+    exportandoExcel.value = true
+    
+    // Se há filtros aplicados, exporta apenas os filtrados
+    const dadosParaExportar = (filtroNome.value || filtroTelefone.value) 
+      ? clientesFiltrados.value 
+      : null
+
+    const resultado = await exportarClientesExcel(clientes.value, dadosParaExportar)
+    
+    if (resultado.success) {
+      // Feedback visual de sucesso
+      console.log(`Excel exportado: ${resultado.filename} com ${resultado.totalClientes} clientes`)
+      
+      // Log silencioso sem alerta do sistema
+      console.info(`✅ Excel exportado com sucesso! Arquivo: ${resultado.filename} | Clientes: ${resultado.totalClientes}`)
+    }
+  } catch (error) {
+    console.error('Erro ao exportar Excel:', error)
+    // Apenas log de erro, sem alerta
+    console.error('❌ Erro ao exportar Excel. Verifique o console para mais detalhes.')
+  } finally {
+    exportandoExcel.value = false
   }
 }
 </script>
@@ -178,6 +209,22 @@ const exportarPDF = async () => {
             />
             <span v-if="exportandoPDF">Exportando...</span>
             <span v-else>Exportar PDF</span>
+          </button>
+
+          <!-- Botão Exportar Excel -->
+          <button
+            @click="exportarExcel"
+            :disabled="exportandoExcel"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-green-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2 text-sm font-medium"
+            :title="(filtroNome || filtroTelefone) ? 'Exportar clientes filtrados em Excel' : 'Exportar todos os clientes em Excel'"
+          >
+            <font-awesome-icon 
+              :icon="exportandoExcel ? 'spinner' : 'file-excel'" 
+              :class="exportandoExcel ? 'animate-spin' : ''"
+              class="w-4 h-4" 
+            />
+            <span v-if="exportandoExcel">Exportando...</span>
+            <span v-else>Exportar Excel</span>
           </button>
           
           <font-awesome-icon icon="users" class="text-muted-foreground" />

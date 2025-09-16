@@ -48,7 +48,8 @@ import {
   faPhone,
   faDownload,
   faFilePdf,
-  faSpinner
+  faSpinner,
+  faFileExcel
 } from '@fortawesome/free-solid-svg-icons'
 
 // Importar ícones de marca (brands)
@@ -109,7 +110,8 @@ library.add(
   faPhone,
   faDownload,
   faFilePdf,
-  faSpinner
+  faSpinner,
+  faFileExcel
 )
 
 export default defineNuxtPlugin((nuxtApp) => {
