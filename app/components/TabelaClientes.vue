@@ -117,6 +117,39 @@ const excluirCliente = (cliente: Cliente) => {
 const formatarData = (data: string) => {
   return new Date(data).toLocaleDateString('pt-BR')
 }
+
+// Composable para exportação PDF
+const { exportarClientesPDF } = usePDFExport()
+
+// Estado para controle do loading da exportação
+const exportandoPDF = ref(false)
+
+// Função para exportar clientes em PDF
+const exportarPDF = async () => {
+  try {
+    exportandoPDF.value = true
+    
+    // Se há filtros aplicados, exporta apenas os filtrados
+    const dadosParaExportar = (filtroNome.value || filtroTelefone.value) 
+      ? clientesFiltrados.value 
+      : null
+
+    const resultado = await exportarClientesPDF(clientes.value, dadosParaExportar)
+    
+    if (resultado.success) {
+      // Feedback visual de sucesso (pode ser substituído por toast no futuro)
+      console.log(`PDF exportado: ${resultado.filename} com ${resultado.totalClientes} clientes`)
+      
+      // Simulação de toast/notificação
+      alert(`✅ PDF exportado com sucesso!\n\nArquivo: ${resultado.filename}\nClientes: ${resultado.totalClientes}`)
+    }
+  } catch (error) {
+    console.error('Erro ao exportar PDF:', error)
+    alert('❌ Erro ao exportar PDF. Tente novamente.')
+  } finally {
+    exportandoPDF.value = false
+  }
+}
 </script>
 
 <template>
@@ -130,7 +163,23 @@ const formatarData = (data: string) => {
             Gerenciar clientes cadastrados ({{ clientesFiltrados.length }} de {{ clientes.length }} clientes)
           </p>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-3">
+          <!-- Botão Exportar PDF -->
+          <button
+            @click="exportarPDF"
+            :disabled="exportandoPDF"
+            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2 text-sm font-medium"
+            :title="(filtroNome || filtroTelefone) ? 'Exportar clientes filtrados em PDF' : 'Exportar todos os clientes em PDF'"
+          >
+            <font-awesome-icon 
+              :icon="exportandoPDF ? 'spinner' : 'file-pdf'" 
+              :class="exportandoPDF ? 'animate-spin' : ''"
+              class="w-4 h-4" 
+            />
+            <span v-if="exportandoPDF">Exportando...</span>
+            <span v-else>Exportar PDF</span>
+          </button>
+          
           <font-awesome-icon icon="users" class="text-muted-foreground" />
         </div>
       </div>

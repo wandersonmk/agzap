@@ -34,21 +34,6 @@ onMounted(async () => {
     
     <!-- Página de Clientes quando carregado -->
     <div v-else class="space-y-6">
-      <!-- Header da página -->
-      <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-2xl font-bold text-foreground">Clientes</h1>
-          <p class="text-muted-foreground">Gerencie seus clientes e histórico de pedidos</p>
-        </div>
-        <div class="flex items-center gap-3">
-          <!-- Futuro: botão para adicionar cliente -->
-          <button class="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
-            <font-awesome-icon icon="plus" class="w-4 h-4 mr-2" />
-            Novo Cliente
-          </button>
-        </div>
-      </div>
-
       <!-- Tabela de clientes -->
       <TabelaClientes />
     </div>

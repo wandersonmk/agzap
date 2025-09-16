@@ -45,7 +45,10 @@ import {
   faCloudUploadAlt,
   faSave,
   faSearch,
-  faPhone
+  faPhone,
+  faDownload,
+  faFilePdf,
+  faSpinner
 } from '@fortawesome/free-solid-svg-icons'
 
 // Importar ícones de marca (brands)
@@ -103,7 +106,10 @@ library.add(
   faCloudUploadAlt,
   faSave,
   faSearch,
-  faPhone
+  faPhone,
+  faDownload,
+  faFilePdf,
+  faSpinner
 )
 
 export default defineNuxtPlugin((nuxtApp) => {
